@@ -1,6 +1,3 @@
-import org.gradle.api.Transformer
-import java.lang.String
-
 plugins {
     id 'com.github.jk1.tcdeps' version '0.17'
 }
@@ -29,20 +26,6 @@ dependencies {
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
-
-
-// -- some helpers
-//Transformer<String, String> stripVersion(Configuration cfg) {
-//    return new Transformer<String, String>() {
-//        String transform(String name) {
-////            def artifacts = cfg.resolvedConfiguration.resolvedArtifacts
-//            println "Resolving renaming of $name"
-//            def artifacts = cfg.resolvedConfiguration.resolvedArtifacts
-//            def artifact = artifacts.find { it.file.name == name }
-//            name - "-${artifact.moduleVersion.id.version}"
-//        }
-//    }
-//}
 
 task prepareArts(type: Sync) {
     from { zipTree(configurations.arts.singleFile) }
