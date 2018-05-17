@@ -1,0 +1,71 @@
+import org.gradle.api.Transformer
+import java.lang.String
+
+plugins {
+    id 'com.github.jk1.tcdeps' version '0.17'
+}
+
+apply plugin: 'base'
+
+repositories {
+    teamcityServer {
+        url = "http://localhost:8111/"
+    }
+}
+ext {
+    root = file(project.projectDir)
+}
+configurations {
+    arts
+}
+
+dependencies {
+    arts tc("GradleTeamCityDepsPluginDemo_SomeAttifacts:lastSuccessful:ar(.*).zip")
+}
+
+
+
+// do not cache lastSuccessful at all.
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+
+// -- some helpers
+//Transformer<String, String> stripVersion(Configuration cfg) {
+//    return new Transformer<String, String>() {
+//        String transform(String name) {
+////            def artifacts = cfg.resolvedConfiguration.resolvedArtifacts
+//            println "Resolving renaming of $name"
+//            def artifacts = cfg.resolvedConfiguration.resolvedArtifacts
+//            def artifact = artifacts.find { it.file.name == name }
+//            name - "-${artifact.moduleVersion.id.version}"
+//        }
+//    }
+//}
+
+task prepareArts(type: Sync) {
+    from { zipTree(configurations.arts.singleFile) }
+    into "$root/fetched/arts"
+}
+
+def stripVersion(cfg){
+    {
+        name ->
+            def artifacts = cfg.resolvedConfiguration.resolvedArtifacts
+            def artifact = artifacts.find { it.file.name == name }
+            name - "-${artifact.moduleVersion.id.version}"
+    }
+}
+
+task prepareArtsRename(type: Sync) {
+    from { configurations.arts.files }
+    rename stripVersion(configurations.arts)
+    into "$root/fetched/versions"
+}
+
+task prepareArtsRaw(type: Sync) {
+    from { configurations.arts.singleFile }
+
+    into "$root/fetched/raw"
+}
